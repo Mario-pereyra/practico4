@@ -3,7 +3,7 @@ type: feature
 id: WI-005
 title: "Implementar CRUD de salas y generación de asientos"
 knowledge_level: K3
-status: draft
+status: done
 phase: now
 initiative: "Catálogo de Películas y Salas"
 domains: []
@@ -89,4 +89,9 @@ Impedir cambios en filas/columnas y eliminación si la sala cuenta con funciones
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+- La entidad `Seat` utiliza `onDelete: 'CASCADE'` en la FK hacia `Room`, por lo que al eliminar la sala los asientos se borran automáticamente en la base de datos.
+- El servicio usa `dataSource.transaction()` para garantizar la atomicidad en la creación y regeneración de asientos.
+- La regeneración de asientos en `PUT` sólo ocurre si `rows` o `columns` realmente cambian. Si sólo cambia el nombre, no se tocan los asientos.
+- El código de asiento sigue el patrón `{RowLabel}{columnNumber}` donde la fila A corresponde a `charCode(65 + 0)` — hasta 26 filas (A-Z).
+- `@Roles` requiere el enum `UserRole`, no un string literal.
+- Al ejecutar la migración se añadió la FK faltante `FK_showtimes_room` que relaciona `showtimes.room_id` con `rooms.id`.
