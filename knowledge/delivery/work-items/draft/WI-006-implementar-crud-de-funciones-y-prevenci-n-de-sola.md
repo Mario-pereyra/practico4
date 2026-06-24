@@ -3,7 +3,7 @@ type: feature
 id: WI-006
 title: "Implementar CRUD de funciones y prevención de solapamientos"
 knowledge_level: K4
-status: draft
+status: done
 phase: now
 initiative: "Programación de Funciones"
 domains: []
@@ -90,4 +90,8 @@ Aplicar la regla de solapamiento en intervalos semiabiertos [startsAt, endsAt) a
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+- La validación de solapamiento usa un intervalo semiabierto `[startsAt, endsAt)` con QueryBuilder: `starts_at < :endsAt AND ends_at > :startsAt`. En `PUT`, se excluye la propia función con `AND id != :excludeId`.
+- `endsAt` se calcula como `startsAt + movie.durationMinutes * 60_000 ms`, nunca se recibe del cliente.
+- `startsAt` debe ser una fecha futura respecto al reloj del servidor (validado en el service, no en el DTO).
+- `SHOWTIME_NOT_MODIFIABLE` y `SHOWTIME_NOT_DELETABLE` se disparan cuando `startsAt <= now()` (función ya iniciada). La comprobación de reservas se completará en WI-010.
+- `relations` en TypeORM v0.3 requiere sintaxis de objeto `{ movie: true, room: true }`, no arreglo de strings.
