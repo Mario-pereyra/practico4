@@ -1,0 +1,433 @@
+{
+  "version": "1",
+  "generatedAt": "2026-06-24T20:27:44.611Z",
+  "project": {
+    "name": "practico4",
+    "state": "new",
+    "teamSize": "small",
+    "structure": "multirepo",
+    "language": "Spanish"
+  },
+  "scan": {
+    "available": true,
+    "languages": [],
+    "frameworks": [],
+    "packageManagers": [],
+    "sourceDirectories": [],
+    "migrationDirectories": [],
+    "contractFiles": [],
+    "infrastructureFiles": [
+      "docker-compose.yml"
+    ]
+  },
+  "knowledge": {
+    "summary": "> What is true about this product right now.",
+    "roadmapSummary": "Generated with Kaddo Roadmap Agent. Initiatives and work items below are **candidates** for\nhuman review — not final commitments.",
+    "inventoryAvailable": true,
+    "workItems": [
+      {
+        "id": "WI-005",
+        "type": "feature",
+        "title": "Implementar CRUD de salas y generación de asientos",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K3",
+        "domains": []
+      },
+      {
+        "id": "WI-006",
+        "type": "feature",
+        "title": "Implementar CRUD de funciones y prevención de solapamientos",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K4",
+        "domains": []
+      },
+      {
+        "id": "WI-007",
+        "type": "feature",
+        "title": "Implementar listado de cartelera pública con filtros",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K2",
+        "domains": []
+      },
+      {
+        "id": "WI-008",
+        "type": "feature",
+        "title": "Implementar detalle de película y horarios de funciones",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K2",
+        "domains": []
+      },
+      {
+        "id": "WI-009",
+        "type": "feature",
+        "title": "Implementar visualización gráfica del mapa de asientos",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K3",
+        "domains": []
+      },
+      {
+        "id": "WI-010",
+        "type": "feature",
+        "title": "Implementar confirmación transaccional de reservas",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K4",
+        "domains": []
+      },
+      {
+        "id": "WI-011",
+        "type": "feature",
+        "title": "Implementar historial y detalle de reservas propias",
+        "status": "draft",
+        "lifecycle": "draft",
+        "knowledgeLevel": "K2",
+        "domains": []
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "WI-001",
+        "type": "chore",
+        "title": "Inicializar la estructura del monorepositorio",
+        "summary": "Inicializar la estructura monorepo (NestJS + React) con TypeScript, testing y linters configurados.",
+        "codeGlobs": [
+          "backend/*",
+          "frontend/*",
+          "package.json",
+          ".gitignore"
+        ]
+      },
+      {
+        "id": "WI-002",
+        "type": "feature",
+        "title": "Implementar módulo de autenticación",
+        "summary": "Registro de clientes, inicio de sesión y endpoints protegidos con roles de usuario en base a JWT siguiendo OpenAPI.",
+        "codeGlobs": [
+          "backend/src/auth/**"
+        ]
+      },
+      {
+        "id": "WI-003",
+        "type": "chore",
+        "title": "Crear seed y configuración de base de datos",
+        "summary": "Base de datos PostgreSQL inicializada con migraciones de TypeORM y usuario ADMIN pre-cargado.",
+        "codeGlobs": [
+          "backend/src/database/**"
+        ]
+      },
+      {
+        "id": "WI-004",
+        "type": "feature",
+        "title": "Implementar CRUD de películas y carga de pósteres",
+        "summary": "CRUD completo de películas bajo /api/v1/admin/movies y carga multipart del póster.",
+        "codeGlobs": [
+          "backend/src/movies/**"
+        ]
+      },
+      {
+        "id": "WI-005",
+        "type": "feature",
+        "title": "Implementar CRUD de salas y generación de asientos",
+        "summary": "CRUD de salas bajo /api/v1/admin/rooms con generación atómica automática de asientos (capacidad = rows * columns).",
+        "codeGlobs": [
+          "backend/src/rooms/**"
+        ]
+      },
+      {
+        "id": "WI-006",
+        "type": "feature",
+        "title": "Implementar CRUD de funciones y prevención de solapamientos",
+        "summary": "Programación de funciones bajo /api/v1/admin/showtimes con cálculo automático de endsAt y prevención estricta de solapamientos en la sala.",
+        "codeGlobs": [
+          "backend/src/showtimes/**"
+        ]
+      },
+      {
+        "id": "WI-007",
+        "type": "feature",
+        "title": "Implementar listado de cartelera pública con filtros",
+        "summary": "Vista pública /movies con buscador por título (búsqueda parcial) y filtros exactos por género alineada a OpenAPI.",
+        "codeGlobs": [
+          "backend/src/movies/**",
+          "frontend/src/pages/Movies.tsx"
+        ]
+      },
+      {
+        "id": "WI-008",
+        "type": "feature",
+        "title": "Implementar detalle de película y horarios de funciones",
+        "summary": "Vista de detalle /movies/:movieId que muestra la sinopsis, póster, y listado de funciones futuras asociadas a la película.",
+        "codeGlobs": [
+          "backend/src/movies/**",
+          "frontend/src/pages/MovieDetails.tsx"
+        ]
+      },
+      {
+        "id": "WI-009",
+        "type": "feature",
+        "title": "Implementar visualización gráfica del mapa de asientos",
+        "summary": "Vista interactiva /showtimes/:showtimeId/seats que presenta el mapa de asientos en estados AVAILABLE o RESERVED.",
+        "codeGlobs": [
+          "backend/src/showtimes/**",
+          "frontend/src/pages/SeatsSelection.tsx"
+        ]
+      },
+      {
+        "id": "WI-010",
+        "type": "feature",
+        "title": "Implementar confirmación transaccional de reservas",
+        "summary": "Endpoint /api/v1/reservations para reservar de 1 a 20 asientos de forma atómica y transaccional, previniendo carreras de solicitudes concurrentes.",
+        "codeGlobs": [
+          "backend/src/reservations/**"
+        ]
+      },
+      {
+        "id": "WI-011",
+        "type": "feature",
+        "title": "Implementar historial y detalle de reservas propias",
+        "summary": "Vistas /my-reservations y /my-reservations/:reservationId para consultar el historial y los detalles de las reservas confirmadas del usuario.",
+        "codeGlobs": [
+          "backend/src/reservations/**",
+          "frontend/src/pages/MyReservations.tsx"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-design",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "backend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-security",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "backend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-stack",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "backend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-standards",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "backend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-design",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "frontend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-security",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "frontend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-stack",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "frontend/**"
+        ]
+      },
+      {
+        "id": "",
+        "type": "module-standards",
+        "title": "",
+        "summary": "",
+        "codeGlobs": [
+          "frontend/**"
+        ]
+      }
+    ]
+  },
+  "layers": [
+    {
+      "layer": "Business",
+      "status": "Consolidated",
+      "detected": [
+        "business.md"
+      ]
+    },
+    {
+      "layer": "Product",
+      "status": "Consolidated",
+      "detected": [
+        "product.md"
+      ]
+    },
+    {
+      "layer": "Tech",
+      "status": "Structured",
+      "detected": [
+        "codebase.md",
+        "knowledge.md",
+        "module-design.md",
+        "security.md",
+        "stack.md",
+        "standards.md"
+      ]
+    },
+    {
+      "layer": "Delivery",
+      "status": "Traceable",
+      "detected": [
+        "WI-001-inicializar-la-estructura-del-monorepositorio.md",
+        "WI-002-implementar-m-dulo-de-autenticaci-n.md",
+        "WI-003-crear-seed-y-configuraci-n-de-base-de-datos.md",
+        "WI-004-implementar-crud-de-pel-culas-y-carga-de-p-steres.md",
+        "WI-005-implementar-crud-de-salas-y-generaci-n-de-asientos.md",
+        "WI-006-implementar-crud-de-funciones-y-prevenci-n-de-sola.md",
+        "WI-007-implementar-listado-de-cartelera-p-blica-con-filtr.md",
+        "WI-008-implementar-detalle-de-pel-cula-y-horarios-de-func.md",
+        "WI-009-implementar-visualizaci-n-gr-fica-del-mapa-de-asie.md",
+        "WI-010-implementar-confirmaci-n-transaccional-de-reservas.md",
+        "WI-011-implementar-historial-y-detalle-de-reservas-propia.md",
+        "roadmap.md"
+      ]
+    }
+  ],
+  "roadmap": {
+    "present": true,
+    "candidates": 11,
+    "materialized": 11,
+    "remaining": 0
+  },
+  "phase": {
+    "phase": "Active Delivery",
+    "reasons": [
+      "Roadmap available",
+      "11 materialized work item(s)",
+      "draft: 7",
+      "Ownership coverage 100%"
+    ],
+    "recommendedAgents": [
+      "work-item-agent"
+    ],
+    "nextStep": "Refine WI-005 from draft to ready",
+    "llmInstructions": [
+      "Refine draft Work Items to ready.",
+      "Use the work-item-agent.",
+      "Do not implement unless the user explicitly asks."
+    ]
+  },
+  "deliveryMix": {
+    "feature": 7
+  },
+  "external": [],
+  "graph": null,
+  "graphHints": null,
+  "skills": [
+    "adr-writing",
+    "graph-metadata-review",
+    "implementation-planning",
+    "learning-capture",
+    "ownership-suggestion",
+    "work-item-refinement"
+  ],
+  "mappedModules": [
+    {
+      "id": "cine-reservas-backend",
+      "name": "Cine Reservas Backend",
+      "repoPath": "backend",
+      "type": "backend",
+      "mainTechnology": "NestJS",
+      "owner": "backend-team",
+      "capabilities": [
+        "Autenticación",
+        "Gestión de Películas",
+        "Gestión de Salas",
+        "Programación de Funciones",
+        "Confirmación de Reservas"
+      ],
+      "code": [
+        "backend/**"
+      ],
+      "status": "active",
+      "artifacts": {
+        "moduleDesign": true,
+        "stack": true,
+        "security": true,
+        "standards": true,
+        "diagrams": true,
+        "adrs": true
+      }
+    },
+    {
+      "id": "cine-reservas-frontend",
+      "name": "Cine Reservas Frontend",
+      "repoPath": "frontend",
+      "type": "frontend",
+      "mainTechnology": "React",
+      "owner": "frontend-team",
+      "capabilities": [
+        "Cartelera Pública",
+        "Detalle de Película",
+        "Mapa de Asientos",
+        "Historial de Reservas"
+      ],
+      "code": [
+        "frontend/**"
+      ],
+      "status": "active",
+      "artifacts": {
+        "moduleDesign": true,
+        "stack": true,
+        "security": true,
+        "standards": true,
+        "diagrams": true,
+        "adrs": true
+      }
+    }
+  ],
+  "missing": [],
+  "handoff": {
+    "recommendedAgents": [
+      "work-item-agent"
+    ],
+    "nextSteps": [
+      "Refine WI-005 from draft to ready"
+    ],
+    "instructions": [
+      "Refine draft Work Items to ready.",
+      "Use the work-item-agent.",
+      "Do not implement unless the user explicitly asks."
+    ],
+    "operatingRules": [
+      "**Never run `git commit`, `git push` or `git merge` without explicit human confirmation.**",
+      "Never push or merge automatically — ever. Suggest a Conventional Commit message and wait.",
+      "When implementing a Work Item, create a branch FIRST (per the project Git strategy, `.kaddo/git.yml`, default `feature/<id>-<slug>`). Never work directly on `main`.",
+      "After significant changes run `kaddo scan`, `kaddo owners suggest` and `kaddo guard`, and update the affected knowledge (ADR / capabilities / current-state).",
+      "Kaddo itself never calls an LLM and never runs git — every git action is the human’s."
+    ]
+  }
+}

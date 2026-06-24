@@ -1,0 +1,41 @@
+version: 1
+modules:
+  - id: cine-reservas-backend
+    name: Cine Reservas Backend
+    repoPath: backend
+    type: backend
+    status: active
+    mainTechnology: NestJS
+    owner: backend-team
+    capabilities:
+      - Autenticación
+      - Gestión de Películas
+      - Gestión de Salas
+      - Programación de Funciones
+      - Confirmación de Reservas
+    code:
+      - backend/**
+    docs:
+      moduleDesign: knowledge/tech/modules/cine-reservas-backend/module-design.md
+      stack: knowledge/tech/modules/cine-reservas-backend/stack.md
+      security: knowledge/tech/modules/cine-reservas-backend/security.md
+      standards: knowledge/tech/modules/cine-reservas-backend/standards.md
+  - id: cine-reservas-frontend
+    name: Cine Reservas Frontend
+    repoPath: frontend
+    type: frontend
+    status: active
+    mainTechnology: React
+    owner: frontend-team
+    capabilities:
+      - Cartelera Pública
+      - Detalle de Película
+      - Mapa de Asientos
+      - Historial de Reservas
+    code:
+      - frontend/**
+    docs:
+      moduleDesign: knowledge/tech/modules/cine-reservas-frontend/module-design.md
+      stack: knowledge/tech/modules/cine-reservas-frontend/stack.md
+      security: knowledge/tech/modules/cine-reservas-frontend/security.md
+      standards: knowledge/tech/modules/cine-reservas-frontend/standards.md

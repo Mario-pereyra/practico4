@@ -1,0 +1,1814 @@
+openapi: 3.1.1
+info:
+  title: Cine Reservas API
+  summary: Contrato REST para cartelera, reservas y administración de cine.
+  description: API académica para una única sede de cine. La cartelera es pública; las reservas requieren JWT; las operaciones administrativas requieren rol ADMIN. Las fechas se reciben en ISO 8601 con desplazamiento, se almacenan como instantes UTC y se muestran en America/La_Paz. Los importes están expresados en bolivianos (BOB) con dos decimales. El cierre de sesión es local en el frontend y no tiene endpoint de revocación en el MVP.
+  version: 1.0.0
+  license:
+    name: Uso académico; no se concede una licencia pública
+    identifier: LicenseRef-Academic-Use-Only
+servers:
+- url: /api/v1
+  description: Base relativa de la API
+tags:
+- name: Auth
+  description: Registro, inicio de sesión y consulta del usuario autenticado.
+- name: Movies
+  description: Cartelera pública y detalle de películas.
+- name: Reservations
+  description: Mapa de asientos, confirmación y consulta de reservas propias.
+- name: Admin Movies
+  description: Administración de películas.
+- name: Admin Rooms
+  description: Administración de salas y asientos.
+- name: Admin Showtimes
+  description: Administración de funciones.
+security:
+- bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      tags:
+      - Auth
+      operationId: register
+      summary: Registrar cliente
+      description: Crea exclusivamente una cuenta con rol CLIENT y devuelve un JWT.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Cliente registrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/EmailAlreadyExists'
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      operationId: login
+      summary: Iniciar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidCredentials'
+  /auth/me:
+    get:
+      tags:
+      - Auth
+      operationId: getCurrentUser
+      summary: Obtener usuario autenticado
+      responses:
+        '200':
+          description: Usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /movies:
+    get:
+      tags:
+      - Movies
+      operationId: listPublicMovies
+      summary: Listar cartelera pública
+      description: Devuelve únicamente películas con al menos una función futura. La búsqueda es parcial por título, recorta espacios y no distingue mayúsculas/minúsculas.
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/SearchQuery'
+      - $ref: '#/components/parameters/GenreQuery'
+      - $ref: '#/components/parameters/RatingQuery'
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/LimitQuery'
+      responses:
+        '200':
+          description: Página de películas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovieSummaryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /movies/{movieId}:
+    get:
+      tags:
+      - Movies
+      operationId: getPublicMovieDetail
+      summary: Obtener detalle público de película
+      description: Incluye únicamente funciones futuras, ordenadas por fecha de inicio.
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/MovieIdPath'
+      responses:
+        '200':
+          description: Detalle de película.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetail'
+        '404':
+          $ref: '#/components/responses/MovieNotFound'
+  /showtimes/{showtimeId}/seats:
+    get:
+      tags:
+      - Reservations
+      operationId: getShowtimeSeatMap
+      summary: Obtener mapa de asientos
+      description: 'Devuelve los datos completos necesarios para la selección: película, sala, horario, precio y disponibilidad actual de cada asiento. Solo admite funciones futuras.'
+      parameters:
+      - $ref: '#/components/parameters/ShowtimeIdPath'
+      responses:
+        '200':
+          description: Mapa de asientos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatMapResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ShowtimeNotFound'
+        '409':
+          description: La función ya inició o no admite nuevas reservas.
+          content:
+            application/json:
+              schema: &id001
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 409
+                code: SHOWTIME_NOT_BOOKABLE
+                message: La función ya inició o no admite nuevas reservas.
+  /reservations:
+    post:
+      tags:
+      - Reservations
+      operationId: createReservation
+      summary: Confirmar reserva
+      description: Crea la reserva en una transacción. Todos los seatIds deben ser únicos, pertenecer a la sala de la función y continuar libres. Cualquier usuario autenticado, incluido ADMIN, puede reservar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reserva confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: La función o uno de los asientos no existe.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 404
+                code: SHOWTIME_OR_SEAT_NOT_FOUND
+                message: La función o uno de los asientos no existe.
+        '409':
+          description: Conflicto de disponibilidad o función no reservable.
+          content:
+            application/json:
+              schema: *id001
+              examples:
+                seatTaken:
+                  value:
+                    statusCode: 409
+                    code: SEAT_ALREADY_RESERVED
+                    message: Uno o más asientos ya fueron reservados para esta función.
+                notBookable:
+                  value:
+                    statusCode: 409
+                    code: SHOWTIME_NOT_BOOKABLE
+                    message: La función ya inició o no admite nuevas reservas.
+  /reservations/my:
+    get:
+      tags:
+      - Reservations
+      operationId: listMyReservations
+      summary: Listar mis reservas
+      parameters:
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/LimitQuery'
+      responses:
+        '200':
+          description: Reservas del usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      description: Devuelve únicamente reservas del usuario autenticado, ordenadas por reservedAt descendente.
+  /reservations/{reservationId}:
+    get:
+      tags:
+      - Reservations
+      operationId: getMyReservation
+      summary: Obtener detalle de una reserva propia
+      description: Si la reserva pertenece a otro usuario se responde 404 para no revelar su existencia.
+      parameters:
+      - $ref: '#/components/parameters/ReservationIdPath'
+      responses:
+        '200':
+          description: Detalle de reserva.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ReservationNotFound'
+  /admin/movies:
+    get:
+      tags:
+      - Admin Movies
+      operationId: listAdminMovies
+      summary: Listar películas para administración
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/SearchQuery'
+      - $ref: '#/components/parameters/GenreQuery'
+      - $ref: '#/components/parameters/RatingQuery'
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/LimitQuery'
+      responses:
+        '200':
+          description: Página administrativa de películas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovieAdminResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+      - Admin Movies
+      operationId: createMovie
+      summary: Crear película
+      description: El póster debe enviarse como archivo JPEG, PNG o WebP de hasta 5 MB.
+      x-roles:
+      - ADMIN
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateMovieMultipartRequest'
+      responses:
+        '201':
+          description: Película creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieAdminDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/movies/{movieId}:
+    get:
+      tags:
+      - Admin Movies
+      operationId: getAdminMovie
+      summary: Obtener película para administración
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/MovieIdPath'
+      responses:
+        '200':
+          description: Detalle administrativo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieAdminDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/MovieNotFound'
+    put:
+      tags:
+      - Admin Movies
+      operationId: updateMovie
+      summary: Actualizar película
+      description: Si cambia durationMinutes y existen funciones futuras o en curso para la película, se rechaza con MOVIE_DURATION_LOCKED. Las funciones pasadas conservan su endsAt persistido.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/MovieIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateMovieMultipartRequest'
+      responses:
+        '200':
+          description: Película actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieAdminDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/MovieNotFound'
+        '409':
+          description: La duración no puede cambiar porque existen funciones futuras o en curso.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 409
+                code: MOVIE_DURATION_LOCKED
+                message: La duración no puede cambiar porque existen funciones futuras o en curso.
+    delete:
+      tags:
+      - Admin Movies
+      operationId: deleteMovie
+      summary: Eliminar película
+      description: Eliminación física permitida únicamente cuando la película no tiene funciones asociadas.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/MovieIdPath'
+      responses:
+        '204':
+          description: Película eliminada.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/MovieNotFound'
+        '409':
+          description: La película tiene funciones asociadas.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 409
+                code: MOVIE_HAS_SHOWTIMES
+                message: La película tiene funciones asociadas.
+  /admin/rooms:
+    get:
+      tags:
+      - Admin Rooms
+      operationId: listRooms
+      summary: Listar salas
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/LimitQuery'
+      responses:
+        '200':
+          description: Página de salas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoomResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+      - Admin Rooms
+      operationId: createRoom
+      summary: Crear sala
+      description: Crea la sala y todos sus asientos en una única transacción. La capacidad se calcula como rows × columns.
+      x-roles:
+      - ADMIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Sala creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/rooms/{roomId}:
+    get:
+      tags:
+      - Admin Rooms
+      operationId: getRoom
+      summary: Obtener sala
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/RoomIdPath'
+      responses:
+        '200':
+          description: Detalle de sala.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RoomNotFound'
+    put:
+      tags:
+      - Admin Rooms
+      operationId: updateRoom
+      summary: Actualizar sala
+      description: El nombre puede cambiar. rows o columns solo pueden cambiar cuando la sala no tiene funciones asociadas; en ese caso los asientos se regeneran en transacción.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/RoomIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomRequest'
+      responses:
+        '200':
+          description: Sala actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RoomNotFound'
+        '409':
+          description: No se puede cambiar la distribución porque la sala tiene funciones asociadas.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 409
+                code: ROOM_LAYOUT_LOCKED
+                message: No se puede cambiar la distribución porque la sala tiene funciones asociadas.
+    delete:
+      tags:
+      - Admin Rooms
+      operationId: deleteRoom
+      summary: Eliminar sala
+      description: Eliminación física permitida únicamente si no existen funciones asociadas. Los asientos se eliminan en cascada.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/RoomIdPath'
+      responses:
+        '204':
+          description: Sala y sus asientos eliminados.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RoomNotFound'
+        '409':
+          description: La sala tiene funciones asociadas.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 409
+                code: ROOM_HAS_SHOWTIMES
+                message: La sala tiene funciones asociadas.
+  /admin/rooms/{roomId}/seats:
+    get:
+      tags:
+      - Admin Rooms
+      operationId: listRoomSeats
+      summary: Listar asientos de una sala
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/RoomIdPath'
+      responses:
+        '200':
+          description: Asientos de la sala.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Seat'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RoomNotFound'
+  /admin/showtimes:
+    get:
+      tags:
+      - Admin Showtimes
+      operationId: listShowtimes
+      summary: Listar funciones
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/MovieIdQuery'
+      - $ref: '#/components/parameters/RoomIdQuery'
+      - $ref: '#/components/parameters/FromDateTimeQuery'
+      - $ref: '#/components/parameters/ToDateTimeQuery'
+      - $ref: '#/components/parameters/PageQuery'
+      - $ref: '#/components/parameters/LimitQuery'
+      responses:
+        '200':
+          description: Página de funciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShowtimeAdminResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+      - Admin Showtimes
+      operationId: createShowtime
+      summary: Crear función
+      description: El backend exige startsAt futuro, calcula y persiste endsAt = startsAt + duración actual de la película, y valida que no haya solapamiento en la misma sala. Las funciones adyacentes están permitidas.
+      x-roles:
+      - ADMIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShowtimeRequest'
+      responses:
+        '201':
+          description: Función creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowtimeAdminDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: La película o la sala no existe.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 404
+                code: MOVIE_OR_ROOM_NOT_FOUND
+                message: La película o la sala no existe.
+        '409':
+          $ref: '#/components/responses/ShowtimeOverlap'
+  /admin/showtimes/{showtimeId}:
+    get:
+      tags:
+      - Admin Showtimes
+      operationId: getShowtime
+      summary: Obtener función
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/ShowtimeIdPath'
+      responses:
+        '200':
+          description: Detalle de función.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowtimeAdminDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ShowtimeNotFound'
+    put:
+      tags:
+      - Admin Showtimes
+      operationId: updateShowtime
+      summary: Actualizar función
+      description: Solo se permite si la función aún no comenzó y no tiene ninguna reserva asociada. Se recalcula endsAt y se vuelve a validar el solapamiento, excluyendo la propia función.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/ShowtimeIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShowtimeRequest'
+      responses:
+        '200':
+          description: Función actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowtimeAdminDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ShowtimeNotFound'
+        '409':
+          description: La función no puede modificarse o el nuevo horario se superpone.
+          content:
+            application/json:
+              schema: *id001
+              examples:
+                notModifiable:
+                  value:
+                    statusCode: 409
+                    code: SHOWTIME_NOT_MODIFIABLE
+                    message: La función ya comenzó o tiene reservas asociadas.
+                overlap:
+                  value:
+                    statusCode: 409
+                    code: SHOWTIME_OVERLAP
+                    message: La sala ya está ocupada durante el intervalo solicitado.
+    delete:
+      tags:
+      - Admin Showtimes
+      operationId: deleteShowtime
+      summary: Eliminar función
+      description: Eliminación física permitida solo cuando la función es futura y no tiene ninguna reserva asociada.
+      x-roles:
+      - ADMIN
+      parameters:
+      - $ref: '#/components/parameters/ShowtimeIdPath'
+      responses:
+        '204':
+          description: Función eliminada.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/ShowtimeNotFound'
+        '409':
+          description: La función ya comenzó o tiene reservas asociadas.
+          content:
+            application/json:
+              schema: *id001
+              example:
+                statusCode: 409
+                code: SHOWTIME_NOT_DELETABLE
+                message: La función ya comenzó o tiene reservas asociadas.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT emitido por POST /auth/login o POST /auth/register.
+  parameters:
+    MovieIdPath:
+      name: movieId
+      in: path
+      required: true
+      description: Identificador de película.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    RoomIdPath:
+      name: roomId
+      in: path
+      required: true
+      description: Identificador de sala.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    ShowtimeIdPath:
+      name: showtimeId
+      in: path
+      required: true
+      description: Identificador de función.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    ReservationIdPath:
+      name: reservationId
+      in: path
+      required: true
+      description: Identificador de reserva.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    PageQuery:
+      name: page
+      in: query
+      required: false
+      description: Página, empezando en 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      description: Elementos por página.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    SearchQuery:
+      name: search
+      in: query
+      required: false
+      description: Coincidencia parcial por título, sin distinguir mayúsculas/minúsculas. Se recortan espacios laterales.
+      schema:
+        type: string
+        maxLength: 160
+    GenreQuery:
+      name: genre
+      in: query
+      required: false
+      description: Género técnico exacto.
+      schema:
+        $ref: '#/components/schemas/MovieGenre'
+    RatingQuery:
+      name: rating
+      in: query
+      required: false
+      description: Clasificación técnica exacta.
+      schema:
+        $ref: '#/components/schemas/MovieRating'
+    MovieIdQuery:
+      name: movieId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    RoomIdQuery:
+      name: roomId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    FromDateTimeQuery:
+      name: from
+      in: query
+      required: false
+      description: Inicio inclusivo del rango ISO 8601.
+      schema:
+        type: string
+        format: date-time
+    ToDateTimeQuery:
+      name: to
+      in: query
+      required: false
+      description: Fin exclusivo del rango ISO 8601.
+      schema:
+        type: string
+        format: date-time
+  responses:
+    BadRequest:
+      description: La solicitud contiene datos inválidos.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 400
+            code: VALIDATION_ERROR
+            message: La solicitud contiene datos inválidos.
+    Unauthorized:
+      description: Se requiere autenticación válida.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 401
+            code: UNAUTHORIZED
+            message: Se requiere autenticación válida.
+    Forbidden:
+      description: El usuario no tiene permisos para esta operación.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 403
+            code: FORBIDDEN
+            message: El usuario no tiene permisos para esta operación.
+    MovieNotFound:
+      description: La película no existe.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 404
+            code: MOVIE_NOT_FOUND
+            message: La película no existe.
+    RoomNotFound:
+      description: La sala no existe.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 404
+            code: ROOM_NOT_FOUND
+            message: La sala no existe.
+    ShowtimeNotFound:
+      description: La función no existe.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 404
+            code: SHOWTIME_NOT_FOUND
+            message: La función no existe.
+    ReservationNotFound:
+      description: La reserva no existe o no pertenece al usuario autenticado.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 404
+            code: RESERVATION_NOT_FOUND
+            message: La reserva no existe o no pertenece al usuario autenticado.
+    EmailAlreadyExists:
+      description: Ya existe una cuenta con ese correo.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 409
+            code: EMAIL_ALREADY_EXISTS
+            message: Ya existe una cuenta con ese correo.
+    InvalidCredentials:
+      description: El correo o la contraseña son incorrectos.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 401
+            code: INVALID_CREDENTIALS
+            message: El correo o la contraseña son incorrectos.
+    ShowtimeOverlap:
+      description: La sala ya está ocupada durante el intervalo solicitado.
+      content:
+        application/json:
+          schema: *id001
+          example:
+            statusCode: 409
+            code: SHOWTIME_OVERLAP
+            message: La sala ya está ocupada durante el intervalo solicitado.
+  schemas:
+    UserRole:
+      type: string
+      enum:
+      - CLIENT
+      - ADMIN
+      example: CLIENT
+    MovieGenre:
+      type: string
+      enum:
+      - ACTION
+      - COMEDY
+      - DRAMA
+      - HORROR
+      - SCIENCE_FICTION
+      - ANIMATION
+      - DOCUMENTARY
+      - THRILLER
+      - ROMANCE
+      - OTHER
+      example: SCIENCE_FICTION
+    MovieRating:
+      type: string
+      enum:
+      - ALL_AGES
+      - AGE_14
+      - R
+      example: AGE_14
+    SeatAvailabilityStatus:
+      type: string
+      enum:
+      - AVAILABLE
+      - RESERVED
+      example: AVAILABLE
+    FieldValidationError:
+      type: object
+      additionalProperties: false
+      required:
+      - field
+      - message
+      properties:
+        field:
+          type: string
+          example: durationMinutes
+        message:
+          type: string
+          example: Debe estar entre 1 y 600.
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - statusCode
+      - code
+      - message
+      properties:
+        statusCode:
+          type: integer
+          minimum: 400
+          maximum: 599
+          example: 409
+        code:
+          type: string
+          example: SHOWTIME_OVERLAP
+        message:
+          type: string
+          example: La sala ya está ocupada durante el intervalo solicitado.
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldValidationError'
+    User:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - email
+      - role
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/UserRole'
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - email
+      - password
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Ana Pérez
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: ana@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          example: Clave123!
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: ana@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          example: Clave123!
+    AuthResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - accessToken
+      - tokenType
+      - user
+      properties:
+        accessToken:
+          type: string
+          minLength: 1
+        tokenType:
+          type: string
+          const: Bearer
+        user:
+          $ref: '#/components/schemas/User'
+    MovieSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - title
+      - genre
+      - durationMinutes
+      - rating
+      - posterUrl
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        rating:
+          $ref: '#/components/schemas/MovieRating'
+        posterUrl:
+          type: string
+          format: uri-reference
+          example: /uploads/posters/movie-1.webp
+    RoomPublicSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PublicShowtime:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - startsAt
+      - endsAt
+      - price
+      - currency
+      - room
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        startsAt:
+          type: string
+          format: date-time
+          example: '2026-06-25T22:00:00Z'
+        endsAt:
+          type: string
+          format: date-time
+          example: '2026-06-26T00:10:00Z'
+        price:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+          example: 45.0
+        currency:
+          type: string
+          const: BOB
+        room:
+          $ref: '#/components/schemas/RoomPublicSummary'
+    MovieDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - title
+      - synopsis
+      - genre
+      - durationMinutes
+      - rating
+      - posterUrl
+      - showtimes
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        synopsis:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        rating:
+          $ref: '#/components/schemas/MovieRating'
+        posterUrl:
+          type: string
+          format: uri-reference
+        showtimes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicShowtime'
+          description: Solo funciones futuras, ordenadas por startsAt ascendente.
+    MovieAdminDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - title
+      - synopsis
+      - genre
+      - durationMinutes
+      - rating
+      - posterUrl
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        synopsis:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        rating:
+          $ref: '#/components/schemas/MovieRating'
+        posterUrl:
+          type: string
+          format: uri-reference
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateMovieMultipartRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - synopsis
+      - genre
+      - durationMinutes
+      - rating
+      - poster
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        synopsis:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        rating:
+          $ref: '#/components/schemas/MovieRating'
+        poster:
+          type: string
+          format: binary
+          description: Archivo JPEG, PNG o WebP de hasta 5 MB.
+    UpdateMovieMultipartRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - synopsis
+      - genre
+      - durationMinutes
+      - rating
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 160
+        synopsis:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        durationMinutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+          description: No puede cambiar si existen funciones futuras o en curso para la película.
+        rating:
+          $ref: '#/components/schemas/MovieRating'
+        poster:
+          type: string
+          format: binary
+          description: Opcional; si se omite se conserva el póster actual. JPEG, PNG o WebP, máximo 5 MB.
+    CreateRoomRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - rows
+      - columns
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 26
+        columns:
+          type: integer
+          minimum: 1
+          maximum: 50
+    UpdateRoomRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - rows
+      - columns
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 26
+          description: No puede cambiar si la sala tiene funciones asociadas.
+        columns:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: No puede cambiar si la sala tiene funciones asociadas.
+    RoomSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - rows
+      - columns
+      - capacity
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 26
+        columns:
+          type: integer
+          minimum: 1
+          maximum: 50
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 1300
+          description: rows × columns.
+    RoomDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - rows
+      - columns
+      - capacity
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 26
+        columns:
+          type: integer
+          minimum: 1
+          maximum: 50
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 1300
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Seat:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - roomId
+      - rowLabel
+      - columnNumber
+      - code
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        roomId:
+          type: integer
+          format: int64
+          minimum: 1
+        rowLabel:
+          type: string
+          pattern: ^[A-Z]$
+          example: B
+        columnNumber:
+          type: integer
+          minimum: 1
+          maximum: 50
+          example: 5
+        code:
+          type: string
+          pattern: ^[A-Z][1-9][0-9]?$
+          example: B5
+    SeatMapSeat:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - roomId
+      - rowLabel
+      - columnNumber
+      - code
+      - status
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        roomId:
+          type: integer
+          format: int64
+          minimum: 1
+        rowLabel:
+          type: string
+          pattern: ^[A-Z]$
+        columnNumber:
+          type: integer
+          minimum: 1
+          maximum: 50
+        code:
+          type: string
+          pattern: ^[A-Z][1-9][0-9]?$
+        status:
+          $ref: '#/components/schemas/SeatAvailabilityStatus'
+    SeatMapResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - showtimeId
+      - movie
+      - room
+      - startsAt
+      - endsAt
+      - price
+      - currency
+      - seats
+      properties:
+        showtimeId:
+          type: integer
+          format: int64
+          minimum: 1
+        movie:
+          $ref: '#/components/schemas/MovieSummary'
+        room:
+          $ref: '#/components/schemas/RoomSummary'
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        price:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+          description: Precio vigente de la función; el backend lo copia como unitPrice al reservar.
+        currency:
+          type: string
+          const: BOB
+        seats:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeatMapSeat'
+    CreateShowtimeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - movieId
+      - roomId
+      - startsAt
+      - price
+      properties:
+        movieId:
+          type: integer
+          format: int64
+          minimum: 1
+        roomId:
+          type: integer
+          format: int64
+          minimum: 1
+        startsAt:
+          type: string
+          format: date-time
+          description: 'Debe ser posterior al reloj del servidor. Ejemplo con zona del cine: 2026-06-25T18:00:00-04:00.'
+        price:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+          example: 45.0
+    UpdateShowtimeRequest:
+      $ref: '#/components/schemas/CreateShowtimeRequest'
+    ShowtimeAdminDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - movie
+      - room
+      - startsAt
+      - endsAt
+      - price
+      - currency
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        movie:
+          $ref: '#/components/schemas/MovieSummary'
+        room:
+          $ref: '#/components/schemas/RoomSummary'
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+          description: Valor persistido al crear o editar la función.
+        price:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+        currency:
+          type: string
+          const: BOB
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateReservationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - showtimeId
+      - seatIds
+      properties:
+        showtimeId:
+          type: integer
+          format: int64
+          minimum: 1
+        seatIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items:
+            type: integer
+            format: int64
+            minimum: 1
+    ReservationSeat:
+      type: object
+      additionalProperties: false
+      required:
+      - seatId
+      - rowLabel
+      - columnNumber
+      - code
+      - unitPrice
+      properties:
+        seatId:
+          type: integer
+          format: int64
+          minimum: 1
+        rowLabel:
+          type: string
+          pattern: ^[A-Z]$
+        columnNumber:
+          type: integer
+          minimum: 1
+          maximum: 50
+        code:
+          type: string
+        unitPrice:
+          type: number
+          minimum: 0.01
+          multipleOf: 0.01
+    ReservationShowtimeSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - movieId
+      - movieTitle
+      - roomId
+      - roomName
+      - startsAt
+      - endsAt
+      - price
+      - currency
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        movieId:
+          type: integer
+          format: int64
+          minimum: 1
+        movieTitle:
+          type: string
+          minLength: 1
+          maxLength: 160
+        roomId:
+          type: integer
+          format: int64
+          minimum: 1
+        roomName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        price:
+          type: number
+          minimum: 0.01
+          multipleOf: 0.01
+        currency:
+          type: string
+          const: BOB
+    ReservationDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - showtime
+      - seats
+      - reservedAt
+      - total
+      - currency
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        showtime:
+          $ref: '#/components/schemas/ReservationShowtimeSummary'
+        seats:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ReservationSeat'
+        reservedAt:
+          type: string
+          format: date-time
+        total:
+          type: number
+          minimum: 0.01
+          multipleOf: 0.01
+        currency:
+          type: string
+          const: BOB
+    PageMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalItems:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+    PaginatedMovieSummaryResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - meta
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieSummary'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+    PaginatedMovieAdminResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - meta
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieAdminDetail'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+    PaginatedRoomResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - meta
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomSummary'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+    PaginatedShowtimeAdminResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - meta
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShowtimeAdminDetail'
+        meta:
+          $ref: '#/components/schemas/PageMeta'
+    PaginatedReservationResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - meta
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReservationDetail'
+        meta:
+          $ref: '#/components/schemas/PageMeta'

@@ -1,0 +1,27 @@
+{
+  "version": "1",
+  "generatedAt": "2026-06-24T20:15:39.136Z",
+  "project": {
+    "state": "new",
+    "structure": "multirepo",
+    "teamSize": "small"
+  },
+  "detected": {
+    "languages": [],
+    "frameworks": [],
+    "packageManagers": [],
+    "sourceDirectories": [],
+    "migrationDirectories": [],
+    "contractFiles": [],
+    "infrastructureFiles": [
+      "docker-compose.yml"
+    ],
+    "testDirectories": []
+  },
+  "suggestions": {
+    "possibleDomains": [],
+    "openQuestions": [
+      "No test directory detected — confirm how this project is tested."
+    ]
+  }
+}
