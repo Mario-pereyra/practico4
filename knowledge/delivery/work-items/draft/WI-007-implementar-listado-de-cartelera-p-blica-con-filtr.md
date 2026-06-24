@@ -3,7 +3,7 @@ type: feature
 id: WI-007
 title: "Implementar listado de cartelera pública con filtros"
 knowledge_level: K2
-status: draft
+status: done
 phase: now
 initiative: "Cartelera Pública y Detalle"
 domains: []
@@ -93,4 +93,10 @@ Excluir de la cartelera aquellas películas que no posean funciones futuras prog
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+- Se creó `PublicMoviesController` separado del admin controller para no mezclar guards. El módulo registra ambos controladores.
+- `listPublicMovies` usa `INNER JOIN` con `showtimes` filtrando `starts_at > now` + `GROUP BY m.id` para devolver solo películas con funciones futuras y sin duplicados.
+- El QueryBuilder de TypeORM requiere nombres de columna en snake_case al referenciar columnas en `innerJoin`: `s.movie_id`, `s.starts_at`.
+- La búsqueda parcial se implementa con `ILIKE` en PostgreSQL (case-insensitive) + trim de espacios.
+- Se añadió proxy `/api → http://localhost:3000` en Vite para evitar CORS en desarrollo.
+- `vitest/config` debe usarse en lugar de `vite` cuando se combinan `test` y `server.proxy` en el mismo `defineConfig`.
+- La UI usa un diseño de grilla responsiva con tarjetas de cine de aspecto ratio 2/3 para el póster.
