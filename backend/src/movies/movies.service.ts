@@ -36,9 +36,9 @@ export class MoviesService {
         'm.id',
         'm.title',
         'm.genre',
-        'm.duration_minutes',
+        'm.durationMinutes',
         'm.rating',
-        'm.poster_url',
+        'm.posterUrl',
       ])
       .orderBy('m.id', 'DESC')
       .skip(skip)

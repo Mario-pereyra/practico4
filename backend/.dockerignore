@@ -6,6 +6,6 @@ npm-debug.log
 .vscode
 .idea
 uploads/posters/*
-!backend/uploads/posters/interstellar.png
-!backend/uploads/posters/dark_knight.png
-!backend/uploads/posters/inside_out_2.png
+!uploads/posters/interstellar.png
+!uploads/posters/dark_knight.png
+!uploads/posters/inside_out_2.png
