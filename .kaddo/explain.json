@@ -27,14 +27,14 @@
   "workItems": {
     "total": 11,
     "inProgress": 0,
-    "done": 2,
+    "done": 11,
     "cancelled": 0,
     "byState": {
-      "draft": 9,
+      "draft": 0,
       "ready": 0,
       "in-progress": 0,
       "blocked": 0,
-      "completed": 2,
+      "completed": 11,
       "archived": 0
     },
     "byType": {
@@ -45,7 +45,18 @@
       {
         "name": "Base y Autenticación",
         "states": {
-          "draft": 1,
+          "draft": 0,
+          "ready": 0,
+          "in-progress": 0,
+          "blocked": 0,
+          "completed": 3,
+          "archived": 0
+        }
+      },
+      {
+        "name": "Cartelera Pública y Detalle",
+        "states": {
+          "draft": 0,
           "ready": 0,
           "in-progress": 0,
           "blocked": 0,
@@ -54,46 +65,35 @@
         }
       },
       {
-        "name": "Cartelera Pública y Detalle",
-        "states": {
-          "draft": 2,
-          "ready": 0,
-          "in-progress": 0,
-          "blocked": 0,
-          "completed": 0,
-          "archived": 0
-        }
-      },
-      {
         "name": "Catálogo de Películas y Salas",
         "states": {
-          "draft": 2,
+          "draft": 0,
           "ready": 0,
           "in-progress": 0,
           "blocked": 0,
-          "completed": 0,
+          "completed": 2,
           "archived": 0
         }
       },
       {
         "name": "Programación de Funciones",
         "states": {
-          "draft": 1,
+          "draft": 0,
           "ready": 0,
           "in-progress": 0,
           "blocked": 0,
-          "completed": 0,
+          "completed": 1,
           "archived": 0
         }
       },
       {
         "name": "Selección de Asientos y Reservas",
         "states": {
-          "draft": 3,
+          "draft": 0,
           "ready": 0,
           "in-progress": 0,
           "blocked": 0,
-          "completed": 0,
+          "completed": 3,
           "archived": 0
         }
       }
@@ -125,8 +125,8 @@
         "id": "WI-003",
         "title": "Crear seed y configuración de base de datos",
         "type": "chore",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Base y Autenticación",
         "knowledgeLevel": "K2",
         "hasOwnership": true,
@@ -136,8 +136,8 @@
         "id": "WI-004",
         "title": "Implementar CRUD de películas y carga de pósteres",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Catálogo de Películas y Salas",
         "knowledgeLevel": "K3",
         "hasOwnership": true,
@@ -147,8 +147,8 @@
         "id": "WI-005",
         "title": "Implementar CRUD de salas y generación de asientos",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Catálogo de Películas y Salas",
         "knowledgeLevel": "K3",
         "hasOwnership": true,
@@ -158,8 +158,8 @@
         "id": "WI-006",
         "title": "Implementar CRUD de funciones y prevención de solapamientos",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Programación de Funciones",
         "knowledgeLevel": "K4",
         "hasOwnership": true,
@@ -169,8 +169,8 @@
         "id": "WI-007",
         "title": "Implementar listado de cartelera pública con filtros",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Cartelera Pública y Detalle",
         "knowledgeLevel": "K2",
         "hasOwnership": true,
@@ -180,8 +180,8 @@
         "id": "WI-008",
         "title": "Implementar detalle de película y horarios de funciones",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Cartelera Pública y Detalle",
         "knowledgeLevel": "K2",
         "hasOwnership": true,
@@ -191,8 +191,8 @@
         "id": "WI-009",
         "title": "Implementar visualización gráfica del mapa de asientos",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Selección de Asientos y Reservas",
         "knowledgeLevel": "K3",
         "hasOwnership": true,
@@ -202,8 +202,8 @@
         "id": "WI-010",
         "title": "Implementar confirmación transaccional de reservas",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Selección de Asientos y Reservas",
         "knowledgeLevel": "K4",
         "hasOwnership": true,
@@ -213,8 +213,8 @@
         "id": "WI-011",
         "title": "Implementar historial y detalle de reservas propias",
         "type": "feature",
-        "status": "draft",
-        "lifecycle": "draft",
+        "status": "done",
+        "lifecycle": "completed",
         "initiative": "Selección de Asientos y Reservas",
         "knowledgeLevel": "K2",
         "hasOwnership": true,

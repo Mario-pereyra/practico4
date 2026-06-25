@@ -52,11 +52,11 @@
 - Ownership coverage: 11/11 work items
 
 ## Work Items
-- Draft: 9
+- Draft: 0
 - Ready: 0
 - In Progress: 0
 - Blocked: 0
-- Completed: 2
+- Completed: 11
 - Archived: 0
 
 ## Work Items by Type
@@ -64,11 +64,11 @@
 - Chores: 2
 
 ## Work Items by Initiative
-- Base y Autenticación — Draft: 1 · Completed: 2
-- Cartelera Pública y Detalle — Draft: 2
-- Catálogo de Películas y Salas — Draft: 2
-- Programación de Funciones — Draft: 1
-- Selección de Asientos y Reservas — Draft: 3
+- Base y Autenticación — Completed: 3
+- Cartelera Pública y Detalle — Completed: 2
+- Catálogo de Películas y Salas — Completed: 2
+- Programación de Funciones — Completed: 1
+- Selección de Asientos y Reservas — Completed: 3
 
 ## Mapped Modules
 - cine-reservas-backend — backend — backend — owner: backend-team
@@ -84,10 +84,9 @@ Groups:
 - tech: 3
 
 ## Phase
-- Phase: Active Delivery
+- Phase: Maintenance
 - Reason:
   - Roadmap available
   - 11 materialized work item(s)
-  - draft: 9
   - Ownership coverage 100%
-- Next step: Refine WI-003 from draft to ready
+- Next step: No active work — use roadmap-agent to plan the next initiative
