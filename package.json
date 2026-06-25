@@ -7,7 +7,11 @@
     "dev": "concurrently \"npm run start:dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
-    "seed": "npm run seed:run --prefix backend",
+    "db:wait": "node scripts/wait-for-db.js",
+    "db:migrate": "npm run migration:run --prefix backend",
+    "db:seed": "npm run seed:run --prefix backend",
+    "setup": "npm run db:up && npm run db:wait && npm run db:migrate && npm run db:seed",
+    "start": "npm run setup && npm run dev",
     "test:backend": "npm test --prefix backend",
     "test:frontend": "npm test --prefix frontend"
   },
