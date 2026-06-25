@@ -3,7 +3,8 @@ type: feature
 id: WI-011
 title: "Implementar historial y detalle de reservas propias"
 knowledge_level: K2
-status: draft
+status: done
+completed_at: 2026-06-25
 phase: now
 initiative: "Selección de Asientos y Reservas"
 domains: []
@@ -87,4 +88,6 @@ Validar rigurosamente que el usuario autenticado sea el propietario de la reserv
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+- Se crearon los endpoints `GET /api/v1/reservations/my` para listar reservas del usuario logueado y `GET /api/v1/reservations/:id` para mostrar el detalle individual.
+- Se implementó protección estricta en el endpoint del detalle validando que el `userId` de la reserva coincida con el usuario logueado (retornando `404 RESERVATION_NOT_FOUND` en caso contrario para no revelar su existencia).
+- Se crearon las vistas `MyReservations.tsx` y `ReservationDetail.tsx` en el frontend, y se integraron en el enrutamiento y la barra de navegación del proyecto.
