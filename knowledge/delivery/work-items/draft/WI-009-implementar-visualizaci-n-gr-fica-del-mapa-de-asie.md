@@ -3,7 +3,8 @@ type: feature
 id: WI-009
 title: "Implementar visualización gráfica del mapa de asientos"
 knowledge_level: K3
-status: draft
+status: done
+completed_at: 2026-06-25
 phase: now
 initiative: "Selección de Asientos y Reservas"
 domains: []
@@ -89,4 +90,6 @@ Los asientos RESERVED deben mostrarse deshabilitados.
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+- Se creó el controlador `ShowtimesClientController` expuesto bajo `/api/v1/showtimes` protegido por `JwtAuthGuard` para servir el mapa de asientos a clientes autenticados.
+- Se implementó la vista interactiva `SeatsSelection.tsx` agrupando las butacas por fila y ordenándolas por columna para pintar la cuadrícula del cine.
+- Para posibilitar la demo del flujo, se añadió una página de login (`Login.tsx`) que almacena el token en `localStorage` y actualiza dinámicamente la barra de navegación.
