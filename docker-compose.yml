@@ -36,7 +36,7 @@ services:
     build: ./frontend
     container_name: cine-reservas-web
     ports:
-      - '80:80'
+      - '8080:80'
     depends_on:
       - backend
     restart: always
@@ -52,7 +52,7 @@ services:
       echo '========================================================================' &&
       echo '   🚀 ¡CINE RESERVAS HA INICIALIZADO Y ESTÁ LISTO PARA USAR! 🚀' &&
       echo '========================================================================' &&
-      echo '  🌐 Frontend (Web Client): http://localhost' &&
+      echo '  🌐 Frontend (Web Client): http://localhost:8080' &&
       echo '  🔌 Backend API (NestJS):  http://localhost:3000' &&
       echo '  🗄️ Base de Datos (Port):  5433' &&
       echo '------------------------------------------------------------------------' &&

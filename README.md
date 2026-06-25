@@ -67,7 +67,7 @@ Este comando automatiza el siguiente flujo:
 3. Espera a que la base de datos acepte conexiones de red, ejecuta las migraciones de TypeORM y la semilla del usuario administrador de forma automática.
 4. Arranca el Backend y el Frontend (este último servido por Nginx en producción y proxificado al backend).
 
-* **Frontend (Nginx):** Disponible en `http://localhost` (puerto 80)
+* **Frontend (Nginx):** Disponible en `http://localhost:8080` (puerto 8080)
 * **Backend API:** Disponible en `http://localhost:3000`
 
 ---
