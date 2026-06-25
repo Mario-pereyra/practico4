@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
@@ -12,5 +12,4 @@ RUN npm run build
 
 EXPOSE 3000
 
-# El comando se especificará en el docker-compose para poder ejecutar migraciones antes de arrancar
 CMD ["npm", "run", "start:prod"]
