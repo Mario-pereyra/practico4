@@ -3,7 +3,8 @@ type: feature
 id: WI-008
 title: "Implementar detalle de película y horarios de funciones"
 knowledge_level: K2
-status: draft
+status: done
+completed_at: 2026-06-24
 phase: now
 initiative: "Cartelera Pública y Detalle"
 domains: []
@@ -87,4 +88,4 @@ Asegurar que solo se devuelvan funciones futuras.
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
+El endpoint público del detalle de película filtra adecuadamente las funciones pasadas e incluye la información de sala. Se solucionó un error de tipado en las relaciones de TypeORM (usando `relations: { room: true }` en vez de un arreglo de strings) y se validó que el frontend consuma correctamente el endpoint `/movies/:movieId`.
