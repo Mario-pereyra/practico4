@@ -14,5 +14,33 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
+  backend:
+    build: ./backend
+    container_name: cine-reservas-api
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password123
+      DB_DATABASE: cine_reservas
+      JWT_SECRET: super-secret-key-123
+      PORT: 3000
+    depends_on:
+      - postgres
+    # Espera a que la base de datos esté lista, corre migraciones, semilla y arranca la API en producción
+    command: sh -c "node -e \"const net = require('net'); const check = () => { const s = new net.Socket(); s.connect(5432, 'postgres', () => { s.destroy(); process.exit(0); }); s.on('error', () => { setTimeout(check, 1000); }); }; check();\" && npm run migration:run && npm run seed:run && npm run start:prod"
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: cine-reservas-web
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+    restart: always
+
 volumes:
   postgres_data:

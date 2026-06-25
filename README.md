@@ -53,7 +53,25 @@ npm start
 * **Frontend:** Disponible en `http://localhost:5173`
 * **Backend API:** Disponible en `http://localhost:3000`
 
+## 🐳 Método Alternativo: Inicialización Completa con Docker Compose (Recomendado)
+
+Si prefieres no instalar Node.js o dependencias locales en tu máquina, puedes levantar **toda la aplicación** (base de datos, backend y frontend) con un único comando de Docker:
+
+```bash
+docker-compose up --build
+```
+
+Este comando automatiza el siguiente flujo:
+1. Construye las imágenes Docker del Backend y Frontend.
+2. Inicia el contenedor de base de datos PostgreSQL.
+3. Espera a que la base de datos acepte conexiones de red, ejecuta las migraciones de TypeORM y la semilla del usuario administrador de forma automática.
+4. Arranca el Backend y el Frontend (este último servido por Nginx en producción y proxificado al backend).
+
+* **Frontend (Nginx):** Disponible en `http://localhost` (puerto 80)
+* **Backend API:** Disponible en `http://localhost:3000`
+
 ---
+
 
 ## 🔐 Credenciales del Sistema
 
