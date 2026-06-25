@@ -3,6 +3,8 @@ import MoviesPage from './pages/Movies'
 import MovieDetailsPage from './pages/MovieDetails'
 import SeatsSelectionPage from './pages/SeatsSelection'
 import LoginPage from './pages/Login'
+import RegisterPage from './pages/Register'
+import AdminPage from './pages/Admin'
 import MyReservationsPage from './pages/MyReservations'
 import ReservationDetailPage from './pages/ReservationDetail'
 
@@ -24,13 +26,17 @@ function Navbar() {
         <div className="navbar__links" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <a href="/movies" id="nav-movies">Cartelera</a>
           {token && <a href="/my-reservations" id="nav-my-reservations">Mis Reservas</a>}
+          {user?.role === 'ADMIN' && <a href="/admin" id="nav-admin" style={{ color: 'var(--accent-2)', fontWeight: 600 }}>Panel Admin</a>}
           {token ? (
             <>
               <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>👤 {user?.email}</span>
               <a href="#" onClick={handleLogout} id="nav-logout" style={{ color: 'var(--danger)' }}>Cerrar sesión</a>
             </>
           ) : (
-            <a href="/login" id="nav-login">Iniciar sesión</a>
+            <>
+              <a href="/login" id="nav-login">Iniciar sesión</a>
+              <a href="/register" id="nav-register" style={{ color: 'var(--accent)', fontWeight: 600 }}>Registrarse</a>
+            </>
           )}
         </div>
       </div>
@@ -67,6 +73,10 @@ export default function App() {
     page = <MyReservationsPage />
   } else if (path === '/login') {
     page = <LoginPage />
+  } else if (path === '/register') {
+    page = <RegisterPage />
+  } else if (path === '/admin') {
+    page = <AdminPage />
   } else if (path === '/' || path === '/movies') {
     page = <MoviesPage />
   } else {
