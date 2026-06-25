@@ -12,6 +12,7 @@
     "db:seed": "npm run seed:run --prefix backend",
     "setup": "npm run db:up && npm run db:wait && npm run db:migrate && npm run db:seed",
     "start": "npm run setup && npm run dev",
+    "db:reset": "docker-compose down -v && npm run setup",
     "test:backend": "npm test --prefix backend",
     "test:frontend": "npm test --prefix frontend"
   },
