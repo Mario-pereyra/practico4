@@ -1,0 +1,11 @@
+node_modules
+dist
+npm-debug.log
+.env
+.git
+.vscode
+.idea
+uploads/posters/*
+!backend/uploads/posters/interstellar.png
+!backend/uploads/posters/dark_knight.png
+!backend/uploads/posters/inside_out_2.png

@@ -1,5 +1,5 @@
-# Etapa de compilación
-FROM node:22-alpine AS build-stage
+# Etapa de compilación con versión de Node fija
+FROM node:22.12.0-alpine AS build-stage
 
 WORKDIR /app
 
@@ -11,8 +11,8 @@ COPY . .
 
 RUN npm run build
 
-# Etapa de producción
-FROM nginx:stable-alpine
+# Etapa de producción con versión de Nginx fija
+FROM nginx:1.25.3-alpine
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15.6-alpine
     container_name: cine-reservas-db
     environment:
       POSTGRES_USER: postgres
@@ -42,7 +42,7 @@ services:
     restart: always
 
   show-info:
-    image: alpine
+    image: alpine:3.19.1
     container_name: cine-reservas-info
     depends_on:
       - frontend
