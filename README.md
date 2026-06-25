@@ -79,7 +79,7 @@ Una vez levantada la aplicación, puedes ingresar con la cuenta de administrador
 * **Usuario (Admin):** `admin@cinema.com`
 * **Contraseña:** `admin123`
 
-Si quieres probar el flujo de clientes, haz clic en **"Iniciar sesión"** y luego en la pestaña de **Registro** para crear una nueva cuenta de cliente.
+Si quieres probar el flujo de clientes, haz clic en **"Registrarse"** en la barra de navegación para crear una nueva cuenta de cliente. Para probar las funciones administrativas, inicia sesión como Administrador y haz clic en **"Panel Admin"** en la Navbar.
 
 ---
 

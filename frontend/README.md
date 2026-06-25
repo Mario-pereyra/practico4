@@ -23,7 +23,9 @@ La estructura bajo la carpeta `src/` se organiza de la siguiente manera:
   * `Movies.tsx`: Cartelera principal con buscador y filtros por género.
   * `MovieDetails.tsx`: Detalle de película y horarios de funciones futuras.
   * `SeatsSelection.tsx`: Grilla interactiva de selección de asientos y cálculo de total.
-  * `Login.tsx`: Formularios unificados de inicio de sesión y registro.
+  * `Login.tsx`: Formulario de inicio de sesión con redirección automática para administradores.
+  * `Register.tsx`: Formulario de registro de nuevos clientes (`CLIENT`).
+  * `Admin.tsx`: Panel administrativo de operaciones CRUD para películas (con carga de pósteres), salas y funciones (protegido para `ADMIN`).
   * `MyReservations.tsx`: Historial de compras y reservas del usuario.
   * `ReservationDetail.tsx`: Detalle y desglose de una reserva confirmada.
 * **`types/`:** Tipados estricto de datos que reflejan el modelo de la API.
@@ -44,7 +46,7 @@ npm install
 ```bash
 npm run dev
 ```
-*El servidor arrancará por defecto en `http://localhost:5173`. Las llamadas a `/api` se redirigen por proxy automático hacia el backend (`http://localhost:3000`) según se especifica en `vite.config.ts`.*
+*El servidor arrancará por defecto en `http://localhost:5173`. Las llamadas a `/api` y `/uploads` se redirigen por proxy automático hacia el backend (`http://localhost:3000`) según se especifica en `vite.config.ts`.*
 
 ### Construcción para Producción
 ```bash
