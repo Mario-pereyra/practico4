@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { expect, test, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
 describe('Flujo de Integración Completo de Cliente (Cine Reservas)', () => {
@@ -180,7 +180,7 @@ describe('Flujo de Integración Completo de Cliente (Cine Reservas)', () => {
     });
 
     await waitFor(() => {
-      const priceElements = screen.getAllByText((content, el) => el?.textContent?.includes('45.00') ?? false);
+      const priceElements = screen.getAllByText((_, el) => el?.textContent?.includes('45.00') ?? false);
       expect(priceElements.length).toBeGreaterThan(0);
     });
   });

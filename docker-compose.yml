@@ -29,7 +29,6 @@ services:
       PORT: 3000
     depends_on:
       - postgres
-    # Espera a que la base de datos esté lista, corre migraciones, semilla y arranca la API en producción
     command: sh -c "node -e \"const net = require('net'); const check = () => { const s = new net.Socket(); s.connect(5432, 'postgres', () => { s.destroy(); process.exit(0); }); s.on('error', () => { setTimeout(check, 1000); }); }; check();\" && npm run migration:run && npm run seed:run && npm run start:prod"
     restart: always
 
@@ -41,6 +40,30 @@ services:
     depends_on:
       - backend
     restart: always
+
+  show-info:
+    image: alpine
+    container_name: cine-reservas-info
+    depends_on:
+      - frontend
+    command: >
+      sh -c "
+      echo ' ' &&
+      echo '========================================================================' &&
+      echo '   🚀 ¡CINE RESERVAS HA INICIALIZADO Y ESTÁ LISTO PARA USAR! 🚀' &&
+      echo '========================================================================' &&
+      echo '  🌐 Frontend (Web Client): http://localhost' &&
+      echo '  🔌 Backend API (NestJS):  http://localhost:3000' &&
+      echo '  🗄️ Base de Datos (Port):  5433' &&
+      echo '------------------------------------------------------------------------' &&
+      echo '  💡 Tips útiles para desarrolladores:' &&
+      echo '     * Apagar y limpiar base de datos: docker-compose down -v' &&
+      echo '     * Rebuildeas y levantar cambios:  docker-compose up --build' &&
+      echo '     * Ver logs en tiempo real (API):  docker logs -f cine-reservas-api' &&
+      echo '     * Ver logs en tiempo real (WEB):  docker logs -f cine-reservas-web' &&
+      echo '========================================================================' &&
+      echo ' '"
+    restart: "no"
 
 volumes:
   postgres_data:
