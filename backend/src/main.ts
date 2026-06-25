@@ -7,6 +7,10 @@ import * as express from 'express';
 import { join } from 'path';
 
 async function bootstrap() {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+
   const app = await NestFactory.create(AppModule);
 
   // Configure global URL prefix
@@ -15,8 +19,9 @@ async function bootstrap() {
   // Serve static files from uploads folder
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
-  // Enable CORS for frontend integration
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  });
 
   // Register global HttpExceptionFilter to format all error responses according to OpenAPI contract
   app.useGlobalFilters(new HttpExceptionFilter());

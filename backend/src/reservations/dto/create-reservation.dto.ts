@@ -1,4 +1,11 @@
-import { IsArray, IsInt, IsNotEmpty, ArrayMinSize, ArrayMaxSize, ArrayUnique } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  ArrayMinSize,
+  ArrayMaxSize,
+  ArrayUnique,
+} from 'class-validator';
 
 export class CreateReservationDto {
   @IsNotEmpty()
