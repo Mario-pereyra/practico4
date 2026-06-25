@@ -3,7 +3,8 @@ type: feature
 id: WI-010
 title: "Implementar confirmación transaccional de reservas"
 knowledge_level: K4
-status: draft
+status: done
+completed_at: 2026-06-25
 phase: now
 initiative: "Selección de Asientos y Reservas"
 domains: []
@@ -91,5 +92,8 @@ Proteger la doble reserva mediante restricción de unicidad UNIQUE(showtime_id, 
 
 ## Learning
 
-_What did we learn from this change? Update after completion._
----
+- Se crearon las entidades `Reservation` y `ReservedSeat` mapeando la relación con usuarios, showtimes y asientos del cine.
+- Se implementó una restricción de base de datos `UNIQUE("showtime_id", "seat_id")` a nivel de la tabla `reserved_seats` para garantizar la unicidad e impedir la doble compra.
+- Se implementó la lógica de reserva de 1 a 20 butacas en `ReservationsService` envuelta en una transacción SQL atómica a través de `dataSource.transaction()`.
+- Se previno la modificación y eliminación de showtimes que contengan reservas de butacas, arrojando errores `409 SHOWTIME_NOT_MODIFIABLE` / `SHOWTIME_NOT_DELETABLE`.
+- Se integró el llamado a la API `/api/v1/reservations` en el componente frontend `SeatsSelection.tsx` y se validó todo mediante una completa suite de pruebas e2e en `test/reservations.e2e-spec.ts`.
