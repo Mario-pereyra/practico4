@@ -17,6 +17,25 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private signAndFormat(user: {
+    id: number;
+    name: string;
+    email: string;
+    role: UserRole;
+  }) {
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    return {
+      accessToken: this.jwtService.sign(payload),
+      tokenType: 'Bearer' as const,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+
   async register(registerDto: RegisterRequest) {
     const existingUser = await this.usersService.findOneByEmail(
       registerDto.email,
@@ -37,19 +56,7 @@ export class AuthService {
       role: UserRole.CLIENT,
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
-
-    return {
-      accessToken,
-      tokenType: 'Bearer',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    };
+    return this.signAndFormat(user);
   }
 
   async login(loginDto: LoginRequest) {
@@ -74,18 +81,6 @@ export class AuthService {
       });
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
-
-    return {
-      accessToken,
-      tokenType: 'Bearer',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    };
+    return this.signAndFormat(user);
   }
 }

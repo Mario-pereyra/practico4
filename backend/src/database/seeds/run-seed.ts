@@ -1,6 +1,10 @@
 import { AppDataSource } from '../data-source';
 import { User, UserRole } from '../../users/entities/user.entity';
-import { Movie, MovieGenre, MovieRating } from '../../movies/entities/movie.entity';
+import {
+  Movie,
+  MovieGenre,
+  MovieRating,
+} from '../../movies/entities/movie.entity';
 import { Room } from '../../rooms/entities/room.entity';
 import { Seat } from '../../rooms/entities/seat.entity';
 import { Showtime } from '../../showtimes/entities/showtime.entity';
@@ -54,7 +58,8 @@ async function run() {
   console.log('Creando películas...');
   const movie1 = movieRepository.create({
     title: 'Interstellar',
-    synopsis: 'Un equipo de exploradores viaja a través de un agujero de gusano en el espacio en un intento por asegurar la supervivencia de la humanidad.',
+    synopsis:
+      'Un equipo de exploradores viaja a través de un agujero de gusano en el espacio en un intento por asegurar la supervivencia de la humanidad.',
     genre: MovieGenre.SCIENCE_FICTION,
     durationMinutes: 169,
     rating: MovieRating.ALL_AGES,
@@ -63,7 +68,8 @@ async function run() {
 
   const movie2 = movieRepository.create({
     title: 'The Dark Knight',
-    synopsis: 'Cuando la amenaza conocida como el Joker causa estragos y caos en Gotham, Batman debe aceptar uno de los mayores desafíos psicológicos y físicos para luchar contra la injusticia.',
+    synopsis:
+      'Cuando la amenaza conocida como el Joker causa estragos y caos en Gotham, Batman debe aceptar uno de los mayores desafíos psicológicos y físicos para luchar contra la injusticia.',
     genre: MovieGenre.ACTION,
     durationMinutes: 152,
     rating: MovieRating.AGE_14,
@@ -72,7 +78,8 @@ async function run() {
 
   const movie3 = movieRepository.create({
     title: 'Inside Out 2',
-    synopsis: 'Regresa a la mente de la recién estrenada adolescente Riley justo cuando el cuartel general está sufriendo una repentina demolición para hacer espacio a algo totalmente inesperado: ¡nuevas emociones!',
+    synopsis:
+      'Regresa a la mente de la recién estrenada adolescente Riley justo cuando el cuartel general está sufriendo una repentina demolición para hacer espacio a algo totalmente inesperado: ¡nuevas emociones!',
     genre: MovieGenre.ANIMATION,
     durationMinutes: 96,
     rating: MovieRating.ALL_AGES,
@@ -84,7 +91,7 @@ async function run() {
 
   // 3. Crear Salas y Asientos de manera atómica
   console.log('Creando salas y butacas...');
-  
+
   // Sala 1 - Premium (5 filas x 8 columnas = 40 asientos)
   const room1 = roomRepository.create({
     name: 'Sala 1 - Premium 2D',
@@ -104,7 +111,7 @@ async function run() {
           rowLabel,
           columnNumber: c,
           code: `${rowLabel}${c}`,
-        })
+        }),
       );
     }
   }
@@ -129,7 +136,7 @@ async function run() {
           rowLabel,
           columnNumber: c,
           code: `${rowLabel}${c}`,
-        })
+        }),
       );
     }
   }
@@ -145,14 +152,16 @@ async function run() {
   const showtime1Starts = new Date(tomorrow);
   showtime1Starts.setHours(18, 0, 0, 0);
   const showtime1Ends = new Date(showtime1Starts);
-  showtime1Ends.setMinutes(showtime1Ends.getMinutes() + savedMovies[0].durationMinutes);
+  showtime1Ends.setMinutes(
+    showtime1Ends.getMinutes() + savedMovies[0].durationMinutes,
+  );
 
   const showtime1 = showtimeRepository.create({
     startsAt: showtime1Starts,
     endsAt: showtime1Ends,
     movieId: savedMovies[0].id,
     roomId: savedRoom1.id,
-    price: 45.00,
+    price: 45.0,
     currency: 'BOB',
   });
 
@@ -160,14 +169,16 @@ async function run() {
   const showtime2Starts = new Date(tomorrow);
   showtime2Starts.setHours(20, 0, 0, 0);
   const showtime2Ends = new Date(showtime2Starts);
-  showtime2Ends.setMinutes(showtime2Ends.getMinutes() + savedMovies[1].durationMinutes);
+  showtime2Ends.setMinutes(
+    showtime2Ends.getMinutes() + savedMovies[1].durationMinutes,
+  );
 
   const showtime2 = showtimeRepository.create({
     startsAt: showtime2Starts,
     endsAt: showtime2Ends,
     movieId: savedMovies[1].id,
     roomId: savedRoom2.id,
-    price: 55.00,
+    price: 55.0,
     currency: 'BOB',
   });
 
@@ -175,14 +186,16 @@ async function run() {
   const showtime3Starts = new Date(tomorrow);
   showtime3Starts.setHours(15, 0, 0, 0);
   const showtime3Ends = new Date(showtime3Starts);
-  showtime3Ends.setMinutes(showtime3Ends.getMinutes() + savedMovies[2].durationMinutes);
+  showtime3Ends.setMinutes(
+    showtime3Ends.getMinutes() + savedMovies[2].durationMinutes,
+  );
 
   const showtime3 = showtimeRepository.create({
     startsAt: showtime3Starts,
     endsAt: showtime3Ends,
     movieId: savedMovies[2].id,
     roomId: savedRoom1.id,
-    price: 30.00,
+    price: 30.0,
     currency: 'BOB',
   });
 

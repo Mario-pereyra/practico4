@@ -96,18 +96,18 @@ export class ShowtimesService {
     }
   }
 
-  private async ensureModifiable(showtime: Showtime): Promise<void> {
-    if (showtime.startsAt <= new Date()) {
-      throw new ConflictException({
-        statusCode: 409,
-        code: 'SHOWTIME_NOT_MODIFIABLE',
-        message: 'La función ya comenzó o tiene reservas asociadas.',
-      });
-    }
+  private async hasStartedOrHasReservations(
+    showtime: Showtime,
+  ): Promise<boolean> {
+    if (showtime.startsAt <= new Date()) return true;
     const count = await this.dataSource.getRepository(ReservedSeat).count({
       where: { showtimeId: showtime.id },
     });
-    if (count > 0) {
+    return count > 0;
+  }
+
+  private async ensureModifiable(showtime: Showtime): Promise<void> {
+    if (await this.hasStartedOrHasReservations(showtime)) {
       throw new ConflictException({
         statusCode: 409,
         code: 'SHOWTIME_NOT_MODIFIABLE',
@@ -117,17 +117,7 @@ export class ShowtimesService {
   }
 
   private async ensureDeletable(showtime: Showtime): Promise<void> {
-    if (showtime.startsAt <= new Date()) {
-      throw new ConflictException({
-        statusCode: 409,
-        code: 'SHOWTIME_NOT_DELETABLE',
-        message: 'La función ya comenzó o tiene reservas asociadas.',
-      });
-    }
-    const count = await this.dataSource.getRepository(ReservedSeat).count({
-      where: { showtimeId: showtime.id },
-    });
-    if (count > 0) {
+    if (await this.hasStartedOrHasReservations(showtime)) {
       throw new ConflictException({
         statusCode: 409,
         code: 'SHOWTIME_NOT_DELETABLE',

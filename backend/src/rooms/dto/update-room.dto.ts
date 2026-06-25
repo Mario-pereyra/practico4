@@ -1,27 +1,3 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { CreateRoomDto } from './create-room.dto';
 
-export class UpdateRoomDto {
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(1)
-  @MaxLength(100)
-  name: string;
-
-  @IsInt()
-  @Min(1)
-  @Max(26)
-  rows: number;
-
-  @IsInt()
-  @Min(1)
-  @Max(50)
-  columns: number;
-}
+export class UpdateRoomDto extends CreateRoomDto {}

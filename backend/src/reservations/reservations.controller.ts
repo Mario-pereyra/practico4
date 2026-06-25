@@ -28,10 +28,7 @@ export class ReservationsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateReservationDto,
-  ) {
+  create(@Req() req: AuthenticatedRequest, @Body() dto: CreateReservationDto) {
     return this.reservationsService.create(Number(req.user.id), dto);
   }
 

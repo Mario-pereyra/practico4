@@ -22,24 +22,21 @@ export class RoomsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   * Generate seat entities for a room grid.
-   * Row labels: A, B, C, ... (up to 26 rows)
-   * Column numbers: 1, 2, 3, ...
-   * Code: {rowLabel}{columnNumber} e.g. "A1", "B5"
-   */
-  private buildSeats(room: Room): Seat[] {
-    const seats: Seat[] = [];
-    for (let r = 0; r < room.rows; r++) {
-      const rowLabel = String.fromCharCode(65 + r); // A, B, C...
-      for (let c = 1; c <= room.columns; c++) {
-        const seat = this.seatRepository.create({
-          roomId: room.id,
+  private buildSeatsForRoom(
+    roomId: number,
+    rows: number,
+    columns: number,
+  ): Partial<Seat>[] {
+    const seats: Partial<Seat>[] = [];
+    for (let r = 0; r < rows; r++) {
+      const rowLabel = String.fromCharCode(65 + r);
+      for (let c = 1; c <= columns; c++) {
+        seats.push({
+          roomId,
           rowLabel,
           columnNumber: c,
           code: `${rowLabel}${c}`,
         });
-        seats.push(seat);
       }
     }
     return seats;
@@ -57,7 +54,7 @@ export class RoomsService {
     });
 
     return {
-      data,
+      items: data,
       meta: {
         total,
         page,
@@ -91,22 +88,11 @@ export class RoomsService {
       });
       const savedRoom = await manager.save(Room, room);
 
-      // Generate seats atomically
-      const seats: Seat[] = [];
-      for (let r = 0; r < dto.rows; r++) {
-        const rowLabel = String.fromCharCode(65 + r);
-        for (let c = 1; c <= dto.columns; c++) {
-          seats.push(
-            manager.create(Seat, {
-              roomId: savedRoom.id,
-              rowLabel,
-              columnNumber: c,
-              code: `${rowLabel}${c}`,
-            }),
-          );
-        }
-      }
-      await manager.save(Seat, seats);
+      const seats = this.buildSeatsForRoom(savedRoom.id, dto.rows, dto.columns);
+      await manager.save(
+        Seat,
+        seats.map((s) => manager.create(Seat, s)),
+      );
 
       return savedRoom;
     });
@@ -141,24 +127,13 @@ export class RoomsService {
         room.columns = dto.columns;
         room.capacity = dto.rows * dto.columns;
 
-        // Delete existing seats and regenerate
         await manager.delete(Seat, { roomId: id });
 
-        const newSeats: Seat[] = [];
-        for (let r = 0; r < dto.rows; r++) {
-          const rowLabel = String.fromCharCode(65 + r);
-          for (let c = 1; c <= dto.columns; c++) {
-            newSeats.push(
-              manager.create(Seat, {
-                roomId: id,
-                rowLabel,
-                columnNumber: c,
-                code: `${rowLabel}${c}`,
-              }),
-            );
-          }
-        }
-        await manager.save(Seat, newSeats);
+        const newSeats = this.buildSeatsForRoom(id, dto.rows, dto.columns);
+        await manager.save(
+          Seat,
+          newSeats.map((s) => manager.create(Seat, s)),
+        );
       }
 
       return manager.save(Room, room);
