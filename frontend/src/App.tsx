@@ -1,4 +1,3 @@
-import './index.css'
 import MoviesPage from './pages/Movies'
 import MovieDetailsPage from './pages/MovieDetails'
 import SeatsSelectionPage from './pages/SeatsSelection'
@@ -8,11 +7,34 @@ import AdminPage from './pages/Admin'
 import MyReservationsPage from './pages/MyReservations'
 import ReservationDetailPage from './pages/ReservationDetail'
 
-function Navbar() {
-  const token = localStorage.getItem('token');
-  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
+interface StoredUser {
+  email?: string;
+  role?: string;
+}
 
-  const handleLogout = (e: React.MouseEvent) => {
+function getStoredUser(): StoredUser | null {
+  const rawUser = localStorage.getItem('user');
+  if (!rawUser) return null;
+
+  try {
+    return JSON.parse(rawUser) as StoredUser;
+  } catch {
+    localStorage.removeItem('user');
+    return null;
+  }
+}
+
+function isActivePath(path: string, target: string) {
+  if (target === '/movies') return path === '/' || path.startsWith('/movies');
+  return path === target || path.startsWith(`${target}/`);
+}
+
+function Navbar() {
+  const currentPath = window.location.pathname;
+  const token = localStorage.getItem('token');
+  const user = getStoredUser();
+
+  const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -22,20 +44,59 @@ function Navbar() {
   return (
     <nav className="navbar" id="main-nav" role="navigation" aria-label="Navegación principal">
       <div className="container navbar__inner">
-        <a href="/" className="navbar__brand" id="brand-logo">🎬 CineReservas</a>
-        <div className="navbar__links" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <a href="/movies" id="nav-movies">Cartelera</a>
-          {token && <a href="/my-reservations" id="nav-my-reservations">Mis Reservas</a>}
-          {user?.role === 'ADMIN' && <a href="/admin" id="nav-admin" style={{ color: 'var(--accent-2)', fontWeight: 600 }}>Panel Admin</a>}
+        <a href="/" className="navbar__brand" id="brand-logo" aria-label="CineReservas - Inicio">
+          <span className="navbar__brand-icon" aria-hidden="true">🎬</span>
+          <span>CineReservas</span>
+        </a>
+
+        <div className="navbar__links">
+          <a
+            href="/movies"
+            id="nav-movies"
+            className={isActivePath(currentPath, '/movies') ? 'active' : undefined}
+          >
+            Cartelera
+          </a>
+
+          {token && (
+            <a
+              href="/my-reservations"
+              id="nav-my-reservations"
+              className={isActivePath(currentPath, '/my-reservations') ? 'active' : undefined}
+            >
+              Mis Reservas
+            </a>
+          )}
+
+          {user?.role === 'ADMIN' && (
+            <a
+              href="/admin"
+              id="nav-admin"
+              className={`navbar__admin-link ${isActivePath(currentPath, '/admin') ? 'active' : ''}`}
+            >
+              Panel Admin
+            </a>
+          )}
+
           {token ? (
             <>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>👤 {user?.email}</span>
-              <a href="#" onClick={handleLogout} id="nav-logout" style={{ color: 'var(--danger)' }}>Cerrar sesión</a>
+              {user?.email && <span className="navbar__user">👤 {user.email}</span>}
+              <a href="/" onClick={handleLogout} id="nav-logout" className="navbar__logout">
+                Cerrar sesión
+              </a>
             </>
           ) : (
             <>
-              <a href="/login" id="nav-login">Iniciar sesión</a>
-              <a href="/register" id="nav-register" style={{ color: 'var(--accent)', fontWeight: 600 }}>Registrarse</a>
+              <a
+                href="/login"
+                id="nav-login"
+                className={isActivePath(currentPath, '/login') ? 'active' : undefined}
+              >
+                Iniciar sesión
+              </a>
+              <a href="/register" id="nav-register" className="navbar__cta">
+                Registrarse
+              </a>
             </>
           )}
         </div>
@@ -47,13 +108,15 @@ function Navbar() {
 function Footer() {
   return (
     <footer className="footer" id="main-footer">
-      <p>© {new Date().getFullYear()} CineReservas · Práctico 4 · Web II</p>
+      <div className="container footer__inner">
+        <p>© {new Date().getFullYear()} CineReservas · Práctico 4 · Web II</p>
+        <span>Reservas claras, rápidas y seguras</span>
+      </div>
     </footer>
   )
 }
 
 export default function App() {
-  // Simple client-side routing by pathname
   const path = window.location.pathname
   const movieDetailMatch = path.match(/^\/movies\/(\d+)$/)
   const seatsMatch = path.match(/^\/showtimes\/(\d+)\/seats$/)
@@ -81,11 +144,14 @@ export default function App() {
     page = <MoviesPage />
   } else {
     page = (
-      <div className="state-center">
-        <span className="icon">🔍</span>
-        <p>Página no encontrada</p>
-        <a href="/" style={{ color: 'var(--accent)', fontWeight: 600 }}>Ir a la cartelera</a>
-      </div>
+      <main className="container">
+        <div className="state-center state-center--card">
+          <span className="icon">🔍</span>
+          <h1>Página no encontrada</h1>
+          <p>La ruta solicitada no existe dentro del sistema.</p>
+          <a href="/" className="btn btn-primary">Ir a la cartelera</a>
+        </div>
+      </main>
     )
   }
 
@@ -97,5 +163,3 @@ export default function App() {
     </>
   )
 }
-
-

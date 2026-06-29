@@ -61,3 +61,31 @@ npm run test
 # Ejecutar el linter para validación estática rápida (Oxlint)
 npm run lint
 ```
+
+---
+
+## ✅ Ajustes incluidos en la versión corregida
+
+Esta versión mantiene la misma arquitectura React + Vite + TypeScript, sin agregar dependencias nuevas, pero mejora la presentación visual y la compatibilidad general:
+
+* Rediseño visual profesional con tema oscuro cinematográfico, tarjetas más limpias, botones consistentes y mejor jerarquía visual.
+* Navbar responsivo con estados activos, usuario logueado visible y manejo seguro del usuario guardado en `localStorage`.
+* Estilos móviles mejorados para cartelera, detalle de película, mapa de asientos, formularios y tablas administrativas.
+* Botón secundario (`btn-secondary`) definido correctamente, porque ya se usaba en varias pantallas pero no tenía estilo base.
+* Configuración centralizada de API en `src/api/config.ts` usando `VITE_API_BASE_URL` o `/api/v1` por defecto.
+* Panel Admin corregido para cumplir reglas de hooks de React y pasar lint sin errores.
+* Validado con:
+
+```bash
+npm run lint
+npm run build
+npm test
+```
+
+Para desarrollo local normal no necesitas definir variables extra. Si quieres apuntar a otro backend puedes crear un `.env` en `frontend/`:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+```
+
+En Docker/Nginx se conserva el comportamiento compatible con `/api/v1` mediante proxy.

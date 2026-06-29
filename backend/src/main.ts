@@ -18,7 +18,6 @@ async function bootstrap() {
   // Enable CORS for frontend integration
   app.enableCors();
 
-  // Register global HttpExceptionFilter to format all error responses according to OpenAPI contract
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Configure ValidationPipe to match exact validation errors format

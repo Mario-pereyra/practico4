@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { API_BASE_URL } from '../api/config';
+
 
 // Types
 interface Movie {
@@ -25,22 +27,37 @@ interface Showtime {
   endsAt: string;
   price: number;
   currency: string;
-  movieId: number;
-  roomId: number;
-  movie?: { title: string };
-  room?: { name: string };
+  movieId?: number;
+  roomId?: number;
+  movie?: { id?: number; title: string };
+  room?: { id?: number; name: string };
 }
+
+type ApiCollection<T> =
+  | T[]
+  | {
+      items?: T[];
+      data?: T[];
+      results?: T[];
+      rows?: T[];
+    };
+
+const collectionToArray = <T,>(payload: ApiCollection<T> | null | undefined): T[] => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (Array.isArray(payload?.rows)) return payload.rows;
+  return [];
+};
 
 export default function AdminPage() {
   const token = localStorage.getItem('token');
 
-  // Check role
+  // Check role without returning before hooks.
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
-  if (!token || user?.role !== 'ADMIN') {
-    window.location.href = '/';
-    return null;
-  }
+  const isAdmin = Boolean(token && user?.role === 'ADMIN');
 
   const [activeTab, setActiveTab] = useState<'movies' | 'rooms' | 'showtimes'>('movies');
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -80,36 +97,49 @@ export default function AdminPage() {
   const [sPrice, setSPrice] = useState(40);
 
   // Fetch Data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+
     setLoading(true);
     setError(null);
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Movies
-      const mRes = await fetch('/api/v1/admin/movies?limit=100', { headers });
-      const mData = await mRes.json();
-      setMovies(mData.items || []);
+      // Movies: el backend devuelve { items, meta }.
+      const mRes = await fetch(`${API_BASE_URL}/admin/movies?limit=100`, { headers });
+      const mData = await mRes.json().catch(() => null);
+      if (!mRes.ok) throw new Error(mData?.message || 'No se pudieron cargar las películas.');
+      setMovies(collectionToArray<Movie>(mData));
 
-      // Rooms
-      const rRes = await fetch('/api/v1/admin/rooms', { headers });
-      const rData = await rRes.json();
-      setRooms(rData || []);
+      // Rooms: el backend actual devuelve { data, meta }, pero se acepta array directo también.
+      const rRes = await fetch(`${API_BASE_URL}/admin/rooms?limit=100`, { headers });
+      const rData = await rRes.json().catch(() => null);
+      if (!rRes.ok) throw new Error(rData?.message || 'No se pudieron cargar las salas.');
+      setRooms(collectionToArray<Room>(rData));
 
-      // Showtimes
-      const sRes = await fetch('/api/v1/admin/showtimes', { headers });
-      const sData = await sRes.json();
-      setShowtimes(sData || []);
+      // Showtimes: el backend devuelve { items, meta }.
+      const sRes = await fetch(`${API_BASE_URL}/admin/showtimes?limit=100`, { headers });
+      const sData = await sRes.json().catch(() => null);
+      if (!sRes.ok) throw new Error(sData?.message || 'No se pudieron cargar las funciones.');
+      setShowtimes(collectionToArray<Showtime>(sData));
     } catch (err: any) {
-      setError('Error al conectar con la base de datos de administración.');
+      setError(err.message || 'Error al conectar con la base de datos de administración.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
+    if (!isAdmin) {
+      window.location.href = '/';
+      return;
+    }
     fetchData();
-  }, []);
+  }, [fetchData, isAdmin]);
+
+  if (!isAdmin) {
+    return null;
+  }
 
   const clearMessages = () => {
     setError(null);
@@ -134,7 +164,7 @@ export default function AdminPage() {
       }
 
       const method = editingMovieId ? 'PUT' : 'POST';
-      const url = editingMovieId ? `/api/v1/admin/movies/${editingMovieId}` : '/api/v1/admin/movies';
+      const url = editingMovieId ? `${API_BASE_URL}/admin/movies/${editingMovieId}` : `${API_BASE_URL}/admin/movies`;
 
       const res = await fetch(url, {
         method,
@@ -183,7 +213,7 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/v1/admin/movies/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/movies/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -211,7 +241,7 @@ export default function AdminPage() {
     try {
       const body = { name: rName, rows: Number(rRows), columns: Number(rColumns) };
       const method = editingRoomId ? 'PUT' : 'POST';
-      const url = editingRoomId ? `/api/v1/admin/rooms/${editingRoomId}` : '/api/v1/admin/rooms';
+      const url = editingRoomId ? `${API_BASE_URL}/admin/rooms/${editingRoomId}` : `${API_BASE_URL}/admin/rooms`;
 
       const res = await fetch(url, {
         method,
@@ -254,7 +284,7 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/v1/admin/rooms/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/rooms/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -290,7 +320,7 @@ export default function AdminPage() {
       };
 
       const method = editingShowtimeId ? 'PUT' : 'POST';
-      const url = editingShowtimeId ? `/api/v1/admin/showtimes/${editingShowtimeId}` : '/api/v1/admin/showtimes';
+      const url = editingShowtimeId ? `${API_BASE_URL}/admin/showtimes/${editingShowtimeId}` : `${API_BASE_URL}/admin/showtimes`;
 
       const res = await fetch(url, {
         method,
@@ -330,9 +360,17 @@ export default function AdminPage() {
 
   const handleEditShowtime = (st: Showtime) => {
     clearMessages();
+    const movieId = st.movieId ?? st.movie?.id;
+    const roomId = st.roomId ?? st.room?.id;
+
+    if (!movieId || !roomId) {
+      setError('No se pudo editar la función porque la respuesta del backend no incluye la película o la sala asociada.');
+      return;
+    }
+
     setEditingShowtimeId(st.id);
-    setSMovieId(st.movieId.toString());
-    setSRoomId(st.roomId.toString());
+    setSMovieId(movieId.toString());
+    setSRoomId(roomId.toString());
 
     // Format ISO string to datetime-local compatible format (YYYY-MM-DDThh:mm)
     const date = new Date(st.startsAt);
@@ -350,7 +388,7 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/v1/admin/showtimes/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/showtimes/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -707,10 +745,10 @@ export default function AdminPage() {
                   {showtimes.map((st) => (
                     <tr key={st.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
                       <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-h)' }}>
-                        {st.movie?.title || `Película #${st.movieId}`}
+                        {st.movie?.title || `Película #${st.movieId ?? 'sin dato'}`}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        {st.room?.name || `Sala #${st.roomId}`}
+                        {st.room?.name || `Sala #${st.roomId ?? 'sin dato'}`}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         🕒 {formatLocalDateTime(st.startsAt)}
@@ -719,7 +757,7 @@ export default function AdminPage() {
                         🕒 {new Date(st.endsAt).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false })}
                       </td>
                       <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--accent-2)' }}>
-                        {st.price.toFixed(2)} {st.currency}
+                        {Number(st.price).toFixed(2)} {st.currency || 'BOB'}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <button onClick={() => handleEditShowtime(st)} className="btn btn-sm" style={{ padding: '6px 12px', marginRight: '8px', fontSize: '12px', background: 'rgba(255,255,255,0.05)' }}>Editar</button>

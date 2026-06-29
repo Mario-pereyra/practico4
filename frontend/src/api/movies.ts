@@ -1,6 +1,8 @@
 import type { PaginatedMoviesResponse, PublicMoviesParams, MovieDetail } from '../types/movies';
 
-const BASE = '/api/v1';
+import { API_BASE_URL } from './config';
+
+const BASE = API_BASE_URL;
 
 export async function fetchPublicMovies(params: PublicMoviesParams = {}): Promise<PaginatedMoviesResponse> {
   const query = new URLSearchParams();
